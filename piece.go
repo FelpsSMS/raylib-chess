@@ -39,6 +39,13 @@ func (p *Piece) CheckForPlayerMove() {
 		}
 	} else {
 		if currentPiece == p {
+			for _, tile := range tilesToBeHighlighted {
+				if rl.CheckCollisionPointRec(rl.GetMousePosition(), tile.box) {
+					p.originalPos = tile.center
+					break
+				}
+			}
+
 			currentPiece = nil
 			p.pos = p.originalPos
 		}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 	"os"
 	"reflect"
 
@@ -20,6 +21,7 @@ var currentPiece *Piece
 var isDragging = false
 var dragOffset rl.Vector2
 var selectedTile *Tile
+var tilesToBeHighlighted []*Tile
 
 func FindElementIndex[T any](slice []T, element T) int {
 	for index, elementInSlice := range slice {
@@ -78,15 +80,14 @@ func drawTiles() {
 		rl.DrawRectangleRec(tile.box, color)
 
 		if selectedTile != nil && currentPiece != nil {
-			logger.Printf("SELECTED ROW %v | COL %v | ID %v", selectedTile.row, selectedTile.col, selectedTile)
-			logger.Printf("TILE ROW %v | COL %v", tile.row, tile.col)
 
 			if tile.row == selectedTile.row && tile.col == selectedTile.col {
 				rl.DrawRectangleLines(int32(tile.box.X), int32(tile.box.Y), int32(tile.box.Width), int32(tile.box.Height), rl.Red)
 			}
 		}
-
 	}
+
+	drawHighlightedTiles()
 
 	for _, marker := range boardMarkers {
 		rl.DrawText(marker.text, marker.X, marker.Y, BOARD_MARKER_FONT_SIZE, rl.DarkBrown)
@@ -149,35 +150,83 @@ func setupDebugPieces() {
 }
 
 func drawDebugPieces() {
+	var currentTile *Tile
+
+	var pieceTypeToChar = map[PieceType]string{
+		PAWN:   "P",
+		ROOK:   "R",
+		KNIGHT: "K",
+		BISHOP: "B",
+		KING:   "KG",
+		QUEEN:  "Q",
+	}
+
+	if currentPiece != nil {
+
+		for _, tile := range tiles {
+			if tile.center == currentPiece.originalPos {
+				currentTile = tile
+			}
+		}
+
+		for _, tile := range tiles {
+			switch currentPiece.pieceType {
+
+			case PAWN:
+				if tile.col == currentTile.col {
+					if currentTile.row == 7 && tile.row == currentTile.row-2 {
+						tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+
+					} else if tile.row == currentTile.row-1 {
+						tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+					}
+				}
+
+			case ROOK:
+				if tile.col == currentTile.col || tile.row == currentTile.row {
+					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+				}
+
+			case BISHOP:
+				if math.Abs(float64(currentTile.row-tile.row)) == math.Abs(float64(currentTile.col-tile.col)) {
+					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+				}
+			}
+		}
+	} else {
+		tilesToBeHighlighted = nil
+	}
 
 	for _, piece := range pieces {
 		rl.DrawCircle(int32(piece.pos.X), int32(piece.pos.Y), CIRCLE_RADIUS, rl.Brown)
-		var text string
 
-		switch piece.pieceType {
+		rl.DrawText(pieceTypeToChar[piece.pieceType], int32(piece.pos.X-CIRCLE_RADIUS/4), int32(piece.pos.Y-CIRCLE_RADIUS/4), 16, rl.Red)
+	}
+}
 
-		case PAWN:
-			text = "P"
+func drawHighlightedTiles() {
+	if currentPiece == nil {
+		return
+	}
 
-		case ROOK:
-			text = "R"
+	for _, tile := range tilesToBeHighlighted {
+		color := rl.White
 
-		case KNIGHT:
-			text = "K"
-
-		case BISHOP:
-			text = "B"
-
-		case KING:
-			text = "KG"
-
-		case QUEEN:
-			text = "Q"
-
-		default:
-			text = "P"
+		if tile.isBlack {
+			color = rl.DarkBrown
 		}
 
-		rl.DrawText(text, int32(piece.pos.X-CIRCLE_RADIUS/4), int32(piece.pos.Y-CIRCLE_RADIUS/4), 16, rl.Red)
+		rl.DrawRectangle(int32(tile.box.X), int32(tile.box.Y), int32(tile.box.Width), int32(tile.box.Height), rl.ColorTint(color, rl.Orange))
+
+		tile.CheckForPiecePlacement()
+
+		if selectedTile != nil {
+			logger.Print(selectedTile)
+			logger.Print(tile)
+
+			if tile.row == selectedTile.row && tile.col == selectedTile.col {
+				rl.DrawRectangleLines(int32(tile.box.X), int32(tile.box.Y), int32(tile.box.Width), int32(tile.box.Height), rl.Red)
+			}
+		}
 	}
 }
