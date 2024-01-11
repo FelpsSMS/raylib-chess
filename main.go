@@ -191,6 +191,24 @@ func drawDebugPieces() {
 				if math.Abs(float64(currentTile.row-tile.row)) == math.Abs(float64(currentTile.col-tile.col)) {
 					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
 				}
+
+			case KNIGHT:
+				if (math.Abs(float64(currentTile.row-tile.row)) == 2) && (math.Abs(float64(currentTile.col-tile.col)) == 1) ||
+					(math.Abs(float64(currentTile.row-tile.row)) == 1) && (math.Abs(float64(currentTile.col-tile.col)) == 2) {
+					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+				}
+
+			case QUEEN:
+				if (tile.col == currentTile.col) || (tile.row == currentTile.row) ||
+					math.Abs(float64(currentTile.row-tile.row)) == math.Abs(float64(currentTile.col-tile.col)) {
+					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+				}
+
+			case KING:
+				if math.Abs(float64(currentTile.row-tile.row)) <= 1 && math.Abs(float64(currentTile.col-tile.col)) <= 1 {
+					tilesToBeHighlighted = append(tilesToBeHighlighted, tile)
+				}
+
 			}
 		}
 	} else {
