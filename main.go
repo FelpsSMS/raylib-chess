@@ -97,13 +97,22 @@ func drawTiles() {
 func setupDebugPieces() {
 	id := 0
 	var pieceType PieceType
+	var isBlack bool
+	isBlack = false
 
 	for _, tile := range tiles {
 		isEmpty := true
 
-		if tile.row == 2 || tile.row == 7 {
+		if tile.row == 2 {
 			pieceType = PAWN
 			isEmpty = false
+			isBlack = false
+		}
+
+		if tile.row == 7 {
+			pieceType = PAWN
+			isEmpty = false
+			isBlack = true
 		}
 
 		if (tile.row == 8 && tile.col == 1) ||
@@ -141,7 +150,7 @@ func setupDebugPieces() {
 		}
 
 		if !isEmpty {
-			piece := Piece{pieceType: pieceType, pos: tile.center, originalPos: tile.center, id: id}
+			piece := Piece{pieceType: pieceType, pos: tile.center, originalPos: tile.center, id: id, isBlack: isBlack}
 			pieces = append(pieces, &piece)
 
 			id++
@@ -211,12 +220,29 @@ func drawDebugPieces() {
 
 			}
 		}
+
 	} else {
 		tilesToBeHighlighted = nil
 	}
 
 	for _, piece := range pieces {
-		rl.DrawCircle(int32(piece.pos.X), int32(piece.pos.Y), CIRCLE_RADIUS, rl.Brown)
+		/* 		if currentPiece.pos == piece.pos && piece.isBlack {
+			index := FindElementIndex(pieces, piece)
+
+			if index != -1 {
+				RemoveFromSlice(pieces, index)
+			}
+		} */
+
+		var pieceColor rl.Color
+
+		if piece.isBlack {
+			pieceColor = rl.DarkBrown
+		} else {
+			pieceColor = rl.Beige
+		}
+
+		rl.DrawCircle(int32(piece.pos.X), int32(piece.pos.Y), CIRCLE_RADIUS, pieceColor)
 
 		rl.DrawText(pieceTypeToChar[piece.pieceType], int32(piece.pos.X-CIRCLE_RADIUS/4), int32(piece.pos.Y-CIRCLE_RADIUS/4), 16, rl.Red)
 	}

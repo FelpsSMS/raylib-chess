@@ -18,6 +18,7 @@ type Piece struct {
 	pieceType   PieceType
 	pos         rl.Vector2
 	originalPos rl.Vector2
+	isBlack     bool
 }
 
 func (p *Piece) CheckForPlayerMove() {
@@ -39,8 +40,26 @@ func (p *Piece) CheckForPlayerMove() {
 		}
 	} else {
 		if currentPiece == p {
+		outer:
 			for _, tile := range tilesToBeHighlighted {
 				if rl.CheckCollisionPointRec(rl.GetMousePosition(), tile.box) {
+					for _, piece := range pieces {
+						if tile.center == piece.pos {
+
+							if piece.isBlack {
+								currentPiece = nil
+								p.pos = p.originalPos
+								break outer
+
+							} else {
+								index := FindElementIndex(pieces, piece)
+
+								if index != -1 {
+									pieces = RemoveFromSlice(pieces, index)
+								}
+							}
+						}
+					}
 					p.originalPos = tile.center
 					break
 				}
